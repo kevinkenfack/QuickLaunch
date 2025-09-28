@@ -171,7 +171,7 @@ const Options: React.FC = () => {
         {/* Informations */}
         <div className="mt-12 text-center text-base-content/50">
           <p>QuickLaunch v1.0.0</p>
-          <p>Extension Chrome pour accès rapide à vos sites favoris</p>
+          <p>Extension pour accès rapide à vos sites favoris</p>
           
           <div className="mt-6 flex items-center justify-center gap-4">
             <div className="flex items-center gap-2">

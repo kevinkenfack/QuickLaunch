@@ -21,16 +21,37 @@ export const defaultShortcuts: Shortcut[] = [
   },
   {
     id: 'drive',
-    name: 'Google Drive',
+    name: 'Drive',
     url: 'https://drive.google.com',
     icon: 'https://ssl.gstatic.com/docs/doclist/images/drive_2022q3_32dp.png',
     isDefault: true
   },
   {
     id: 'docs',
-    name: 'Google Docs',
+    name: 'Docs',
     url: 'https://docs.google.com',
     icon: 'https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico',
+    isDefault: true
+  },
+  {
+    id: 'sheets',
+    name: 'Sheets',
+    url: 'https://sheets.google.com',
+    icon: 'https://ssl.gstatic.com/docs/spreadsheets/spreadsheets_2023q4.ico',
+    isDefault: true
+  },
+  {
+    id: 'calendar',
+    name: 'Calendar',
+    url: 'https://calendar.google.com',
+    icon: 'https://calendar.google.com/googlecalendar/images/favicons_2020q4/calendar_28.ico',
+    isDefault: true
+  },
+  {
+    id: 'gemini',
+    name: 'Gemini',
+    url: 'https://gemini.google.com',
+    icon: 'https://www.gstatic.com/lamda/images/gemini_sparkle_aurora_33f86dc0c0257da337c63.svg',
     isDefault: true
   },
   {
@@ -38,13 +59,6 @@ export const defaultShortcuts: Shortcut[] = [
     name: 'GitHub',
     url: 'https://github.com',
     icon: 'https://github.com/favicon.ico',
-    isDefault: true
-  },
-  {
-    id: 'twitter',
-    name: 'Twitter',
-    url: 'https://twitter.com',
-    icon: 'https://abs.twimg.com/favicons/twitter.2.ico',
     isDefault: true
   }
 ];
