@@ -1,5 +1,5 @@
 {
-  "name": "quicklaunch-chrome-extension",
+  "name": "quicklaunch-chromium-extension",
   "private": true,
   "version": "1.0.0",
   "type": "module",
