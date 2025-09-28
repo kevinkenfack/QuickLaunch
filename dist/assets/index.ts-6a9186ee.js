@@ -1,1 +1,0 @@
-chrome.runtime.onInstalled.addListener(e=>{e.reason==="install"&&console.log("QuickLaunch installé avec succès !")});chrome.commands.onCommand.addListener(e=>{e==="open-quicklaunch"&&chrome.action.openPopup()});chrome.runtime.onUpdateAvailable.addListener(()=>{console.log("Mise à jour disponible pour QuickLaunch")});
