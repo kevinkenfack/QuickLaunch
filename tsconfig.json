@@ -4,6 +4,7 @@
     "module": "ESNext",
     "moduleResolution": "Node",
     "outDir": "dist",
+    "jsx": "react",
     "rootDir": "src",
     "strict": true,
     "esModuleInterop": true,
