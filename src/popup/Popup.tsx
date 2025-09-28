@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Plus, Edit3 } from 'lucide-react';
+import { Settings, Plus, Edit3, Github } from 'lucide-react';
 import ShortcutGrid from './components/ShortcutGrid';
 import AddShortcutModal from './components/AddShortcutModal';
 import { Shortcut, AppSettings } from '../types';
@@ -50,6 +50,10 @@ const Popup: React.FC = () => {
     chrome.tabs.create({ url: chrome.runtime.getURL('src/options/index.html') });
   };
 
+  const openGitHub = () => {
+    chrome.tabs.create({ url: 'https://github.com/kevinkenfack/QuickLaunch' });
+  };
+
   if (loading) {
     return (
       <div className="w-96 h-64 flex items-center justify-center">
@@ -87,6 +91,13 @@ const Popup: React.FC = () => {
           >
             <Settings size={16} />
           </button>
+          <button
+            className="btn btn-ghost btn-sm"
+            onClick={openGitHub}
+            title="GitHub - Contribuer"
+          >
+            <Github size={16} />
+          </button>
         </div>
       </div>
 
@@ -108,6 +119,19 @@ const Popup: React.FC = () => {
             <Plus size={16} />
             Ajouter un raccourci
           </button>
+        </div>
+
+        {/* Open Source Notice */}
+        <div className="mt-4 text-center">
+          <p className="text-xs text-base-content/60">
+            🌟 Projet open-source • 
+            <button 
+              className="link link-primary ml-1"
+              onClick={openGitHub}
+            >
+              Contribuer sur GitHub
+            </button>
+          </p>
         </div>
       </div>
 

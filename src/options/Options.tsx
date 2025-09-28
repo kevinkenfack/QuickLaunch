@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, RotateCcw, Palette } from 'lucide-react';
+import { Save, RotateCcw, Palette, Github, Heart } from 'lucide-react';
 import { AppSettings } from '../types';
 import { getSettings, saveSettings, defaultSettings } from '../storage';
 
@@ -57,6 +57,10 @@ const Options: React.FC = () => {
       setMessage('Paramètres réinitialisés !');
       setTimeout(() => setMessage(''), 3000);
     }
+  };
+
+  const openGitHub = () => {
+    chrome.tabs.create({ url: 'https://github.com/kevinkenfack/QuickLaunch' });
   };
 
   if (loading) {
@@ -168,6 +172,20 @@ const Options: React.FC = () => {
         <div className="mt-12 text-center text-base-content/50">
           <p>QuickLaunch v1.0.0</p>
           <p>Extension Chrome pour accès rapide à vos sites favoris</p>
+          
+          <div className="mt-6 flex items-center justify-center gap-4">
+            <div className="flex items-center gap-2">
+              <Heart size={16} className="text-red-500" />
+              <span className="text-sm">Projet open-source</span>
+            </div>
+            <button
+              className="btn btn-outline btn-sm gap-2"
+              onClick={openGitHub}
+            >
+              <Github size={16} />
+              Contribuer
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -171,13 +171,43 @@ Aucune configuration supplémentaire n'est nécessaire !
 
 ## 🤝 Contribution
 
-Ce projet est open-source ! Les contributions sont les bienvenues :
+Ce projet est **100% open-source** ! Toutes les contributions sont les bienvenues 🎉
 
-1. Fork le projet
-2. Créez une branche feature (`git checkout -b feature/nouvelle-fonctionnalite`)
-3. Committez vos changements (`git commit -m 'Ajout nouvelle fonctionnalité'`)
-4. Push vers la branche (`git push origin feature/nouvelle-fonctionnalite`)
-5. Ouvrez une Pull Request
+### 🚀 Comment contribuer
+
+1. **Fork** le projet sur GitHub
+2. **Clone** votre fork : `git clone https://github.com/VOTRE-USERNAME/QuickLaunch.git`
+3. **Créez** une branche feature : `git checkout -b feature/ma-nouvelle-fonctionnalite`
+4. **Développez** votre fonctionnalité
+5. **Testez** que tout fonctionne : `npm run build`
+6. **Committez** : `git commit -m "✨ Ajout: ma nouvelle fonctionnalité"`
+7. **Push** : `git push origin feature/ma-nouvelle-fonctionnalite`
+8. **Ouvrez** une Pull Request sur le repo principal
+
+### 💡 Idées de contributions
+
+- 🎨 Nouveaux thèmes DaisyUI
+- 🔧 Nouvelles fonctionnalités (drag & drop, catégories...)
+- 🐛 Corrections de bugs
+- 📚 Amélioration de la documentation
+- 🌍 Traductions (i18n)
+- ⚡ Optimisations de performance
+- 🧪 Tests unitaires
+
+### 📋 Guidelines
+
+- Respectez le style de code existant (TypeScript + React)
+- Testez vos modifications avant de soumettre
+- Documentez les nouvelles fonctionnalités
+- Utilisez des commits descriptifs avec des emojis 😊
+
+### 🐛 Signaler un bug
+
+Ouvrez une [issue](https://github.com/kevinkenfack/QuickLaunch/issues) avec :
+- Description claire du problème
+- Étapes pour reproduire
+- Version de Chrome/navigateur
+- Captures d'écran si pertinent
 
 ---
 
