@@ -7,7 +7,7 @@
     "storage"
   ],
   "background": {
-    "service_worker": "src/background/index.ts",
+    "service_worker": "service-worker-loader.js",
     "type": "module"
   },
   "commands": {
@@ -28,7 +28,7 @@
       "32": "icons/icon-32.png",
       "38": "icons/icon-38.png",
       "48": "icons/icon-48.png",
-      "128":"icons/icon-128.png"
+      "128": "icons/icon-128.png"
     }
   },
   "icons": {
@@ -37,7 +37,7 @@
     "32": "icons/icon-32.png",
     "38": "icons/icon-38.png",
     "48": "icons/icon-48.png",
-    "128":"icons/icon-128.png"
+    "128": "icons/icon-128.png"
   },
   "options_page": "src/options/index.html"
 }
