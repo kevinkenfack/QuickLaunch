@@ -15,7 +15,7 @@ export const defaultShortcuts: Shortcut[] = [
   {
     id: 'gmail',
     name: 'Gmail',
-    url: 'https://gmail.com',
+    url: 'https://mail.google.com',
     icon: 'https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico',
     isDefault: true
   },
