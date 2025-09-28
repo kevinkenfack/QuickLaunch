@@ -63,6 +63,7 @@ quicklaunch/
 ├── tailwind.config.js
 ├── postcss.config.js
 ├── package.json
+├── tsconfig.json
 └── README.md
 ```
 
