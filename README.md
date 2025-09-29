@@ -35,7 +35,7 @@ Créer une extension Chromium qui affiche, lorsqu'on clique dessus, une **popup 
 ```
 quicklaunch/
 ├── public/
-│   └── icons/                  # Icônes par défaut de l'extension (16, 19, 32, 38, 48, 128px)
+│   └── icons/                  # Icônes par défaut de l'extension (16, 19, 32, 38, 48 et 128px)
 ├── src/
 │   ├── popup/                  # Interface principale affichée à l'ouverture
 │   │   ├── Popup.tsx
