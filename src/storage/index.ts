@@ -3,6 +3,7 @@ import { Shortcut, AppSettings } from '../types';
 const SHORTCUTS_KEY = 'quicklaunch_shortcuts';
 const SETTINGS_KEY = 'quicklaunch_settings';
 const ICONS_CACHE_KEY = 'quicklaunch_icons_cache';
+const BACKGROUND_CACHE_KEY = 'quicklaunch_background_cache';
 
 // Raccourcis par défaut
 export const defaultShortcuts: Shortcut[] = [
@@ -73,7 +74,9 @@ export const defaultShortcuts: Shortcut[] = [
 
 export const defaultSettings: AppSettings = {
   theme: 'light',
-  gridColumns: 3
+  gridColumns: 3,
+  backgroundImage: '',
+  backgroundOpacity: 0.1
 };
 
 // Cache des icônes en base64

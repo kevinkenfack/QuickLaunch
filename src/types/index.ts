@@ -9,4 +9,6 @@ export interface Shortcut {
 export interface AppSettings {
   theme: string;
   gridColumns: number;
+  backgroundImage: string;
+  backgroundOpacity: number;
 }
