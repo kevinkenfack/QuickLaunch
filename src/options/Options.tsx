@@ -143,6 +143,103 @@ const Options: React.FC = () => {
             </div>
           </div>
 
+          {/* Arrière-plan */}
+          <div className="card bg-base-200">
+            <div className="card-body">
+              <h2 className="card-title flex items-center gap-2">
+                <Image size={20} />
+                Arrière-plan
+              </h2>
+
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Arrière-plans prédéfinis</span>
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  {defaultBackgrounds.map((bg, index) => (
+                    <div
+                      key={index}
+                      className={`
+                        card bg-base-300 cursor-pointer transition-all hover:scale-105
+                        ${!settings.backgroundImage && !bg.url ? 'ring-2 ring-primary' : ''}
+                        ${settings.backgroundImage && bg.url && settings.backgroundImage.includes('unsplash') ? 'ring-2 ring-primary' : ''}
+                      `}
+                      onClick={() => handleBackgroundSelect(bg.url)}
+                    >
+                      <div className="card-body p-2">
+                        {bg.preview ? (
+                          <img
+                            src={bg.preview}
+                            alt={bg.name}
+                            className="w-full h-16 object-cover rounded"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="w-full h-16 bg-base-100 rounded flex items-center justify-center">
+                            <span className="text-xs">Aucun</span>
+                          </div>
+                        )}
+                        <p className="text-xs text-center mt-1">{bg.name}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Arrière-plan personnalisé</span>
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleCustomBackground}
+                  className="file-input file-input-bordered"
+                  disabled={backgroundLoading}
+                />
+                <label className="label">
+                  <span className="label-text-alt">
+                    Formats supportés: JPG, PNG, WebP (max 2MB)
+                  </span>
+                </label>
+              </div>
+
+              {settings.backgroundImage && (
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text">Opacité de l'arrière-plan</span>
+                  </label>
+                  <input
+                    type="range"
+                    min="0.1"
+                    max="1"
+                    step="0.1"
+                    value={settings.backgroundOpacity}
+                    onChange={(e) => setSettings({ ...settings, backgroundOpacity: parseFloat(e.target.value) })}
+                    className="range range-primary"
+                  />
+                  <div className="w-full flex justify-between text-xs px-2">
+                    <span>10%</span>
+                    <span>50%</span>
+                    <span>100%</span>
+                  </div>
+                  <label className="label">
+                    <span className="label-text-alt">
+                      Actuellement: {Math.round(settings.backgroundOpacity * 100)}%
+                    </span>
+                  </label>
+                </div>
+              )}
+
+              {backgroundLoading && (
+                <div className="alert alert-info">
+                  <span className="loading loading-spinner loading-sm"></span>
+                  <span>Téléchargement de l'arrière-plan en cours...</span>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Actions */}
           <div className="flex gap-4 justify-end">
             <button

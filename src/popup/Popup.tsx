@@ -77,7 +77,25 @@ const Popup: React.FC = () => {
   }
 
   return (
-    <div className="w-96 min-h-64 bg-base-100">
+    <div 
+      className="w-96 min-h-64 bg-base-100 relative"
+      style={{
+        backgroundImage: settings.backgroundImage ? `url(${settings.backgroundImage})` : 'none',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      {/* Overlay pour l'opacité */}
+      {settings.backgroundImage && (
+        <div 
+          className="absolute inset-0 bg-base-100"
+          style={{ opacity: 1 - settings.backgroundOpacity }}
+        />
+      )}
+      
+      {/* Contenu principal */}
+      <div className="relative z-10">
       {/* Header */}
       <div className="navbar bg-base-200 px-4 py-2">
         <div className="flex-1">
@@ -147,6 +165,7 @@ const Popup: React.FC = () => {
             </button>
           </p>
         </div>
+      </div>
       </div>
 
       {/* Add Shortcut Modal */}

@@ -154,40 +154,90 @@ const saveIconToCache = async (url: string, base64: string): Promise<void> => {
 // Initialiser les icônes par défaut dans le cache
 export const initializeDefaultIcons = async (): Promise<void> => {
   try {
-    // Vérifier si les icônes sont déjà en cache
+    // Vérifier si les icônes sont déjà toutes en cache
     const cache = await getIconCache();
-    const shortcuts = await getShortcuts();
+    let shortcuts = await getShortcuts();
     
-    let needsUpdate = false;
-    const updatedShortcuts = [...shortcuts];
-  
-    for (let i = 0; i < updatedShortcuts.length; i++) {
-      const shortcut = updatedShortcuts[i];
-      
-      if (shortcut.isDefault && !shortcut.icon.startsWith('data:')) {
-        // Vérifier si l'icône est déjà en cache
-        if (cache[shortcut.icon]) {
-          updatedShortcuts[i] = { ...shortcut, icon: cache[shortcut.icon] };
-          needsUpdate = true;
-        } else {
-          // Télécharger seulement si pas en cache
-          try {
-            const cachedIcon = await downloadAndCacheIcon(shortcut.icon);
-            updatedShortcuts[i] = { ...shortcut, icon: cachedIcon };
-            needsUpdate = true;
-          } catch (error) {
-            console.error(`Erreur lors de la mise en cache de l'icône pour ${shortcut.name}:`, error);
+    // Vérifier si toutes les icônes par défaut sont déjà en cache
+    const defaultIconsInCache = shortcuts
+      .filter(s => s.isDefault)
+      .every(s => s.icon.startsWith('data:') || cache[s.icon]);
+    
+    if (defaultIconsInCache) {
+      // Toutes les icônes sont déjà en cache, pas besoin de télécharger
+      return;
+    }
+
+    // Télécharger seulement les icônes manquantes
+    const updatedShortcuts = await Promise.all(
+      shortcuts.map(async (shortcut) => {
+        if (shortcut.isDefault && !shortcut.icon.startsWith('data:')) {
+          if (cache[shortcut.icon]) {
+            return { ...shortcut, icon: cache[shortcut.icon] };
+          } else {
+            try {
+              const cachedIcon = await downloadAndCacheIcon(shortcut.icon);
+              return { ...shortcut, icon: cachedIcon };
+            } catch (error) {
+              console.error(`Erreur lors de la mise en cache de l'icône pour ${shortcut.name}:`, error);
+              return shortcut;
+            }
           }
         }
-      }
-    }
-  
-    // Sauvegarder seulement si des changements ont été faits
-    if (needsUpdate) {
-      await saveShortcuts(updatedShortcuts);
-    }
+        return shortcut;
+      })
+    );
+
+    await saveShortcuts(updatedShortcuts);
   } catch (error) {
     console.error('Erreur lors de l\'initialisation des icônes:', error);
+  }
+};
+
+// Fonction pour télécharger et mettre en cache une image d'arrière-plan
+export const downloadAndCacheBackground = async (imageUrl: string): Promise<string> => {
+  try {
+    // Vérifier d'abord le cache
+    const result = await chrome.storage.local.get([BACKGROUND_CACHE_KEY]);
+    const cache = result[BACKGROUND_CACHE_KEY] || {};
+    
+    if (cache[imageUrl]) {
+      return cache[imageUrl];
+    }
+
+    // Télécharger l'image
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 secondes pour les images plus grandes
+    
+    const response = await fetch(imageUrl, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) throw new Error('Failed to fetch background image');
+    
+    const blob = await response.blob();
+    
+    // Vérifier la taille (max 2MB pour les arrière-plans)
+    if (blob.size > 2 * 1024 * 1024) {
+      throw new Error('Background image too large (max 2MB)');
+    }
+    
+    // Convertir en base64
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result as string;
+        
+        // Sauvegarder dans le cache
+        cache[imageUrl] = base64;
+        await chrome.storage.local.set({ [BACKGROUND_CACHE_KEY]: cache });
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    console.error('Erreur lors du téléchargement de l\'arrière-plan:', error);
+    throw error;
   }
 };
 
