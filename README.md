@@ -86,6 +86,12 @@ export interface Shortcut {
 export interface AppSettings {
   theme: string;
   gridColumns: number;
+  backgroundImage: string;
+  backgroundOpacity: number;
+}
+
+interface IconCache {
+  [url: string]: string; // Cache des icônes en base64
 }
 
 interface IconCache {
@@ -154,6 +160,9 @@ pnpm vite build
 - [x] 🎨 Animations et micro-interactions
 - [x] 🌐 Fonctionnement hors ligne avec cache des icônes
 - [x] 🎪 Indicateurs visuels pour le glisser-déposer
+- [x] 🖼️ Arrière-plans personnalisables (prédéfinis + upload)
+- [x] 🎛️ Contrôle d'opacité pour les arrière-plans
+- [x] 💾 Cache intelligent des arrière-plans (pas de re-téléchargement)
 
 ---
 
@@ -178,6 +187,12 @@ pnpm vite build
 - Accessible via le bouton ⚙️ dans la popup
 - Personnalisez le thème parmi 30+ options
 - Ajustez le nombre de colonnes (2-5)
+- **Arrière-plans personnalisables** :
+  - 5 arrière-plans prédéfinis de haute qualité (Unsplash)
+  - Upload d'images personnalisées (JPG, PNG, WebP, max 2MB)
+  - Contrôle d'opacité de 10% à 100%
+  - Aperçu en temps réel
+  - Cache automatique (pas de re-téléchargement)
 - Réinitialisez les paramètres si nécessaire
 
 ### Raccourcis clavier
@@ -194,6 +209,7 @@ L'extension utilise `chrome.storage.sync` pour synchroniser automatiquement :
 
 Et `chrome.storage.local` pour :
 - **Cache des icônes** en base64 (fonctionnement hors ligne)
+- **Cache des arrière-plans** en base64 (fonctionnement hors ligne)
 - Données volumineuses qui n'ont pas besoin d'être synchronisées
 
 Aucune configuration supplémentaire n'est nécessaire !
@@ -202,9 +218,11 @@ Aucune configuration supplémentaire n'est nécessaire !
 
 QuickLaunch fonctionne parfaitement **sans connexion internet** grâce à :
 - **Cache intelligent des icônes** : Toutes les icônes sont téléchargées et stockées localement
+- **Cache des arrière-plans** : Les images d'arrière-plan sont mises en cache localement
 - **Initialisation automatique** : Les icônes par défaut sont mises en cache au premier lancement
 - **Fallback gracieux** : Icône par défaut si le téléchargement échoue
 - **Optimisation de la taille** : Compression et limitation de taille des images
+- **Chargement parallèle** : Toutes les ressources se téléchargent simultanément pour éviter l'affichage progressif
 
 ---
 
@@ -226,6 +244,8 @@ Ce projet est **100% open-source** ! Toutes les contributions sont les bienvenue
 ### 💡 Idées de contributions
 
 - 🎨 Nouveaux thèmes DaisyUI
+- 🖼️ Nouveaux arrière-plans prédéfinis
+- 🎛️ Effets visuels avancés (blur, gradients, etc.)
 - 🔧 Nouvelles fonctionnalités (catégories, recherche, favoris...)
 - 🎯 Améliorations du glisser-déposer (grilles multiples, dossiers...)
 - 🐛 Corrections de bugs
@@ -234,6 +254,8 @@ Ce projet est **100% open-source** ! Toutes les contributions sont les bienvenue
 - ⚡ Optimisations de performance
 - 🧪 Tests unitaires
 - 📱 Fonctionnalités hors ligne avancées
+- 🎨 Système de thèmes personnalisés
+- 🌈 Générateur d'arrière-plans procéduraux
 
 ### 📋 Guidelines
 
@@ -265,4 +287,5 @@ MIT License - voir le fichier [LICENSE](LICENSE) pour plus de détails.
 - [DaisyUI](https://daisyui.com/) pour les composants élégants
 - [Lucide](https://lucide.dev/) pour les icônes modernes
 - [React Beautiful DnD](https://github.com/atlassian/react-beautiful-dnd) pour le glisser-déposer fluide
+- [Unsplash](https://unsplash.com/) pour les arrière-plans de haute qualité
 - La communauté open-source pour l'inspiration et les contributions
