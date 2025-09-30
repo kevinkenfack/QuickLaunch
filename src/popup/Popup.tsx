@@ -22,15 +22,26 @@ const Popup: React.FC = () => {
 
   const loadData = async () => {
     try {
-      // Initialiser les icônes par défaut si nécessaire
-      await initializeDefaultIcons();
-      
       const [loadedShortcuts, loadedSettings] = await Promise.all([
         getShortcuts(),
         getSettings()
       ]);
+      
       setShortcuts(loadedShortcuts);
       setSettings(loadedSettings);
+      
+      // Initialiser les icônes en arrière-plan seulement si nécessaire
+      const hasUncachedIcons = loadedShortcuts.some(s => 
+        s.isDefault && !s.icon.startsWith('data:')
+      );
+      
+      if (hasUncachedIcons) {
+        // Faire cela en arrière-plan sans bloquer l'UI
+        initializeDefaultIcons().then(() => {
+          // Recharger les raccourcis après la mise en cache
+          getShortcuts().then(setShortcuts);
+        });
+      }
     } catch (error) {
       console.error('Erreur lors du chargement des données:', error);
     } finally {

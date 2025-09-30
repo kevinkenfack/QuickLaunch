@@ -90,11 +90,21 @@ export const downloadAndCacheIcon = async (iconUrl: string): Promise<string> => 
       return cache[iconUrl];
     }
 
-    // Télécharger l'icône
+    // Télécharger l'icône avec timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 secondes timeout
+    
     const response = await fetch(iconUrl);
+    clearTimeout(timeoutId);
+    
     if (!response.ok) throw new Error('Failed to fetch icon');
     
     const blob = await response.blob();
+    
+    // Vérifier la taille du blob (max 500KB)
+    if (blob.size > 500 * 1024) {
+      throw new Error('Icon too large');
+    }
     
     // Convertir en base64
     return new Promise((resolve, reject) => {
@@ -140,21 +150,42 @@ const saveIconToCache = async (url: string, base64: string): Promise<void> => {
 
 // Initialiser les icônes par défaut dans le cache
 export const initializeDefaultIcons = async (): Promise<void> => {
-  const shortcuts = await getShortcuts();
+  try {
+    // Vérifier si les icônes sont déjà en cache
+    const cache = await getIconCache();
+    const shortcuts = await getShortcuts();
+    
+    let needsUpdate = false;
+    const updatedShortcuts = [...shortcuts];
   
-  for (const shortcut of shortcuts) {
-    if (shortcut.isDefault && !shortcut.icon.startsWith('data:')) {
-      try {
-        const cachedIcon = await downloadAndCacheIcon(shortcut.icon);
-        // Mettre à jour le raccourci avec l'icône en cache
-        shortcut.icon = cachedIcon;
-      } catch (error) {
-        console.error(`Erreur lors de la mise en cache de l'icône pour ${shortcut.name}:`, error);
+    for (let i = 0; i < updatedShortcuts.length; i++) {
+      const shortcut = updatedShortcuts[i];
+      
+      if (shortcut.isDefault && !shortcut.icon.startsWith('data:')) {
+        // Vérifier si l'icône est déjà en cache
+        if (cache[shortcut.icon]) {
+          updatedShortcuts[i] = { ...shortcut, icon: cache[shortcut.icon] };
+          needsUpdate = true;
+        } else {
+          // Télécharger seulement si pas en cache
+          try {
+            const cachedIcon = await downloadAndCacheIcon(shortcut.icon);
+            updatedShortcuts[i] = { ...shortcut, icon: cachedIcon };
+            needsUpdate = true;
+          } catch (error) {
+            console.error(`Erreur lors de la mise en cache de l'icône pour ${shortcut.name}:`, error);
+          }
+        }
       }
     }
-  }
   
-  await saveShortcuts(shortcuts);
+    // Sauvegarder seulement si des changements ont été faits
+    if (needsUpdate) {
+      await saveShortcuts(updatedShortcuts);
+    }
+  } catch (error) {
+    console.error('Erreur lors de l\'initialisation des icônes:', error);
+  }
 };
 
 export const getShortcuts = async (): Promise<Shortcut[]> => {
