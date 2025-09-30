@@ -4,7 +4,6 @@
   "version": "1.0.0",
   "author": "Kevin Kenfack",
   "homepage_url": "https://github.com/kevinkenfack/QuickLaunch",
-  "default_locale": "fr",
   "short_name": "QuickLaunch",
   "description": "Extension Chromium moderne pour accéder rapidement à vos sites favoris via une popup élégante et personnalisable",
   "permissions": [

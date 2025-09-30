@@ -55,6 +55,13 @@ export const defaultShortcuts: Shortcut[] = [
     isDefault: true
   },
   {
+    id: 'whatsapp',
+    name: 'WhatsApp',
+    url: 'https://web.whatsapp.com',
+    icon: 'https://web.whatsapp.com/favicon.ico',
+    isDefault: true
+  },
+  {
     id: 'github',
     name: 'GitHub',
     url: 'https://github.com',
