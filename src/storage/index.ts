@@ -4,6 +4,7 @@ const SHORTCUTS_KEY = 'quicklaunch_shortcuts';
 const SETTINGS_KEY = 'quicklaunch_settings';
 const ICONS_CACHE_KEY = 'quicklaunch_icons_cache';
 const BACKGROUND_CACHE_KEY = 'quicklaunch_background_cache';
+const BACKGROUND_CACHE_KEY = 'quicklaunch_background_cache';
 
 // Raccourcis par défaut
 export const defaultShortcuts: Shortcut[] = [
@@ -77,7 +78,43 @@ export const defaultSettings: AppSettings = {
   gridColumns: 3,
   backgroundImage: '',
   backgroundOpacity: 0.1
+  backgroundImage: '',
+  backgroundOpacity: 0.1
 };
+
+// Images d'arrière-plan par défaut (Unsplash)
+export const defaultBackgrounds = [
+  {
+    name: 'Aucun arrière-plan',
+    url: '',
+    preview: ''
+  },
+  {
+    name: 'Montagne abstraite',
+    url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop',
+    preview: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&h=150&fit=crop'
+  },
+  {
+    name: 'Gradient coloré',
+    url: 'https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=800&h=600&fit=crop',
+    preview: 'https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=200&h=150&fit=crop'
+  },
+  {
+    name: 'Formes géométriques',
+    url: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=800&h=600&fit=crop',
+    preview: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=200&h=150&fit=crop'
+  },
+  {
+    name: 'Vagues abstraites',
+    url: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=800&h=600&fit=crop',
+    preview: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=200&h=150&fit=crop'
+  },
+  {
+    name: 'Texture minimaliste',
+    url: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=800&h=600&fit=crop',
+    preview: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=200&h=150&fit=crop'
+  }
+];
 
 // Cache des icônes en base64
 interface IconCache {
@@ -191,6 +228,53 @@ export const initializeDefaultIcons = async (): Promise<void> => {
     await saveShortcuts(updatedShortcuts);
   } catch (error) {
     console.error('Erreur lors de l\'initialisation des icônes:', error);
+  }
+};
+
+// Fonction pour télécharger et mettre en cache une image d'arrière-plan
+export const downloadAndCacheBackground = async (imageUrl: string): Promise<string> => {
+  try {
+    // Vérifier d'abord le cache
+    const result = await chrome.storage.local.get([BACKGROUND_CACHE_KEY]);
+    const cache = result[BACKGROUND_CACHE_KEY] || {};
+    
+    if (cache[imageUrl]) {
+      return cache[imageUrl];
+    }
+
+    // Télécharger l'image
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 secondes pour les images plus grandes
+    
+    const response = await fetch(imageUrl, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) throw new Error('Failed to fetch background image');
+    
+    const blob = await response.blob();
+    
+    // Vérifier la taille (max 2MB pour les arrière-plans)
+    if (blob.size > 2 * 1024 * 1024) {
+      throw new Error('Background image too large (max 2MB)');
+    }
+    
+    // Convertir en base64
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result as string;
+        
+        // Sauvegarder dans le cache
+        cache[imageUrl] = base64;
+        await chrome.storage.local.set({ [BACKGROUND_CACHE_KEY]: cache });
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    console.error('Erreur lors du téléchargement de l\'arrière-plan:', error);
+    throw error;
   }
 };
 
