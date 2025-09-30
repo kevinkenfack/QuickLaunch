@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Save, RotateCcw, Palette, Github, Heart } from 'lucide-react';
+import { Save, RotateCcw, Palette, Github, Heart, Image } from 'lucide-react';
 import { AppSettings } from '../types';
-import { getSettings, saveSettings, defaultSettings } from '../storage';
+import { getSettings, saveSettings, defaultSettings, defaultBackgrounds, downloadAndCacheBackground } from '../storage';
+import { convertImageToBase64 } from '../utils';
 
 const Options: React.FC = () => {
   const [settings, setSettings] = useState<AppSettings>(defaultSettings);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [backgroundLoading, setBackgroundLoading] = useState(false);
 
   const themes = [
     'light', 'dark', 'cupcake', 'bumblebee', 'emerald', 'corporate',
@@ -56,6 +58,54 @@ const Options: React.FC = () => {
       await saveSettings(defaultSettings);
       setMessage('Paramètres réinitialisés !');
       setTimeout(() => setMessage(''), 3000);
+    }
+  };
+
+  const handleBackgroundSelect = async (backgroundUrl: string) => {
+    if (!backgroundUrl) {
+      // Supprimer l'arrière-plan
+      setSettings({ ...settings, backgroundImage: '' });
+      return;
+    }
+
+    setBackgroundLoading(true);
+    try {
+      const cachedBackground = await downloadAndCacheBackground(backgroundUrl);
+      setSettings({ ...settings, backgroundImage: cachedBackground });
+    } catch (error) {
+      console.error('Erreur lors du téléchargement de l\'arrière-plan:', error);
+      setMessage('Erreur lors du téléchargement de l\'arrière-plan');
+      setTimeout(() => setMessage(''), 3000);
+    } finally {
+      setBackgroundLoading(false);
+    }
+  };
+
+  const handleCustomBackground = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setMessage('Veuillez sélectionner un fichier image valide');
+      setTimeout(() => setMessage(''), 3000);
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) { // 2MB limit
+      setMessage('L\'image doit faire moins de 2MB');
+      setTimeout(() => setMessage(''), 3000);
+      return;
+    }
+
+    setBackgroundLoading(true);
+    try {
+      const base64 = await convertImageToBase64(file);
+      setSettings({ ...settings, backgroundImage: base64 });
+    } catch (error) {
+      setMessage('Erreur lors du traitement de l\'image');
+      setTimeout(() => setMessage(''), 3000);
+    } finally {
+      setBackgroundLoading(false);
     }
   };
 
