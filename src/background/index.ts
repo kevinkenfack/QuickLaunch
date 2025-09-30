@@ -1,6 +1,6 @@
 // Background script pour QuickLaunch
 // Gère les événements de l'extension en arrière-plan
-import { initializeDefaultIcons } from '../storage';
+import { initializeDefaultIcons } from '../storage/index';
 
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === 'install') {
