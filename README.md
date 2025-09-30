@@ -92,27 +92,31 @@ export interface AppSettings {
 
 ### Prérequis
 - Node.js 18+ 
-- npm ou yarn
+- npm ou pnpm
 
 ### Installation
 ```bash
 # Cloner le projet
-git clone <repo-url>
+git https://github.com/kevinkenfack/QuickLaunch.git
 cd quicklaunch
 
 # Installer les dépendances
-npm install
+npm install  
+
+pnpm install
 ```
 
 ### Développement
 ```bash
 # Lancer le build en mode watch
 npm run dev
+
+pnpm dev
 ```
 
 ### Charger l'extension dans le navigateur
 1. Ouvrez Chrome/Edge/Brave
-2. Allez sur `chrome://extensions/` (ou `edge://extensions/`)
+2. Allez sur `chrome://extensions/`, `brave://extensions/` ou `edge://extensions/`
 3. Activez le **"Mode développeur"**
 4. Cliquez **"Charger l'extension non empaquetée"**
 5. Sélectionnez le dossier **`dist/`**
@@ -120,6 +124,8 @@ npm run dev
 ### Build de production
 ```bash
 npm run build
+
+pnpm vite build
 ```
 
 ---
@@ -177,7 +183,7 @@ Ce projet est **100% open-source** ! Toutes les contributions sont les bienvenue
 ### 🚀 Comment contribuer
 
 1. **Fork** le projet sur GitHub
-2. **Clone** votre fork : `git clone https://github.com/VOTRE-USERNAME/QuickLaunch.git`
+2. **Clone** votre fork : `https://github.com/kevinkenfack/QuickLaunch.git`
 3. **Créez** une branche feature : `git checkout -b feature/ma-nouvelle-fonctionnalite`
 4. **Développez** votre fonctionnalité
 5. **Testez** que tout fonctionne : `npm run build`
