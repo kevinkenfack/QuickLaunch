@@ -7,7 +7,13 @@ import { getShortcuts, getSettings, saveSettings, initializeDefaultIcons } from 
 
 const Popup: React.FC = () => {
   const [shortcuts, setShortcuts] = useState<Shortcut[]>([]);
-  const [settings, setSettings] = useState<AppSettings>({ theme: 'light', gridColumns: 3 });
+  const [settings, setSettings] = useState<AppSettings>({
+    theme: 'light',
+    gridColumns: 3,
+    backgroundImage: '',
+    backgroundOpacity: 0.1
+  });
+  
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [loading, setLoading] = useState(true);

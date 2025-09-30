@@ -4,7 +4,6 @@ const SHORTCUTS_KEY = 'quicklaunch_shortcuts';
 const SETTINGS_KEY = 'quicklaunch_settings';
 const ICONS_CACHE_KEY = 'quicklaunch_icons_cache';
 const BACKGROUND_CACHE_KEY = 'quicklaunch_background_cache';
-const BACKGROUND_CACHE_KEY = 'quicklaunch_background_cache';
 
 // Raccourcis par défaut
 export const defaultShortcuts: Shortcut[] = [
@@ -73,16 +72,15 @@ export const defaultShortcuts: Shortcut[] = [
   }
 ];
 
+// Paramètres par défaut
 export const defaultSettings: AppSettings = {
   theme: 'light',
   gridColumns: 3,
   backgroundImage: '',
   backgroundOpacity: 0.1
-  backgroundImage: '',
-  backgroundOpacity: 0.1
 };
 
-// Images d'arrière-plan par défaut (Unsplash)
+/// Images d'arrière-plan par défaut (Unsplash)
 export const defaultBackgrounds = [
   {
     name: 'Aucun arrière-plan',
@@ -116,43 +114,31 @@ export const defaultBackgrounds = [
   }
 ];
 
-// Cache des icônes en base64
-interface IconCache {
-  [url: string]: string;
-}
+// Cache des icônes
+interface IconCache { [url: string]: string; }
 
-// Fonction pour télécharger et convertir une icône en base64
+// Cache des backgrounds
+interface BackgroundCache { [url: string]: string; }
+
+// ✅ ICÔNES
 export const downloadAndCacheIcon = async (iconUrl: string): Promise<string> => {
   try {
-    // Vérifier d'abord le cache
     const cache = await getIconCache();
-    if (cache[iconUrl]) {
-      return cache[iconUrl];
-    }
+    if (cache[iconUrl]) return cache[iconUrl];
 
-    // Télécharger l'icône avec timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 secondes timeout
-    
-    const response = await fetch(iconUrl);
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const response = await fetch(iconUrl, { signal: controller.signal });
     clearTimeout(timeoutId);
-    
+
     if (!response.ok) throw new Error('Failed to fetch icon');
-    
     const blob = await response.blob();
-    
-    // Vérifier la taille du blob (max 500KB)
-    if (blob.size > 500 * 1024) {
-      throw new Error('Icon too large');
-    }
-    
-    // Convertir en base64
-    return new Promise((resolve, reject) => {
+    if (blob.size > 500 * 1024) throw new Error('Icon too large');
+
+    return await new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = async () => {
         const base64 = reader.result as string;
-        
-        // Sauvegarder dans le cache
         await saveIconToCache(iconUrl, base64);
         resolve(base64);
       };
@@ -160,187 +146,79 @@ export const downloadAndCacheIcon = async (iconUrl: string): Promise<string> => 
       reader.readAsDataURL(blob);
     });
   } catch (error) {
-    console.error('Erreur lors du téléchargement de l\'icône:', error);
-    // Retourner une icône par défaut en cas d'erreur
-    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iIzk0YTNiOCIvPgo8cGF0aCBkPSJNMTIgOGMtMi4yMSAwLTQgMS43OS00IDRzMS43OSA0IDQgNCA0LTEuNzkgNC00LTEuNzktNC00LTR6bTAgNmMtMS4xIDAtMi0uOS0yLTJzLjktMiAyLTIgMiAuOSAyIDItLjkgMi0yIDJ6IiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K';
+    console.error('Erreur téléchargement icône:', error);
+    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iIzk0YTNiOCIvPjwvc3ZnPg==';
   }
 };
 
-// Récupérer le cache des icônes
 const getIconCache = async (): Promise<IconCache> => {
-  try {
-    const result = await chrome.storage.local.get([ICONS_CACHE_KEY]);
-    return result[ICONS_CACHE_KEY] || {};
-  } catch (error) {
-    console.error('Erreur lors de la récupération du cache des icônes:', error);
-    return {};
-  }
+  const result = await chrome.storage.local.get([ICONS_CACHE_KEY]);
+  return result[ICONS_CACHE_KEY] || {};
 };
 
-// Sauvegarder une icône dans le cache
 const saveIconToCache = async (url: string, base64: string): Promise<void> => {
-  try {
-    const cache = await getIconCache();
-    cache[url] = base64;
-    await chrome.storage.local.set({ [ICONS_CACHE_KEY]: cache });
-  } catch (error) {
-    console.error('Erreur lors de la sauvegarde de l\'icône dans le cache:', error);
-  }
+  const cache = await getIconCache();
+  cache[url] = base64;
+  await chrome.storage.local.set({ [ICONS_CACHE_KEY]: cache });
 };
 
-// Initialiser les icônes par défaut dans le cache
 export const initializeDefaultIcons = async (): Promise<void> => {
-  try {
-    // Vérifier si les icônes sont déjà toutes en cache
-    const cache = await getIconCache();
-    let shortcuts = await getShortcuts();
-    
-    // Vérifier si toutes les icônes par défaut sont déjà en cache
-    const defaultIconsInCache = shortcuts
-      .filter(s => s.isDefault)
-      .every(s => s.icon.startsWith('data:') || cache[s.icon]);
-    
-    if (defaultIconsInCache) {
-      // Toutes les icônes sont déjà en cache, pas besoin de télécharger
-      return;
-    }
+  const cache = await getIconCache();
+  let shortcuts = await getShortcuts();
+  const defaultIconsInCache = shortcuts.filter(s => s.isDefault).every(s => s.icon.startsWith('data:') || cache[s.icon]);
+  if (defaultIconsInCache) return;
 
-    // Télécharger seulement les icônes manquantes
-    const updatedShortcuts = await Promise.all(
-      shortcuts.map(async (shortcut) => {
-        if (shortcut.isDefault && !shortcut.icon.startsWith('data:')) {
-          if (cache[shortcut.icon]) {
-            return { ...shortcut, icon: cache[shortcut.icon] };
-          } else {
-            try {
-              const cachedIcon = await downloadAndCacheIcon(shortcut.icon);
-              return { ...shortcut, icon: cachedIcon };
-            } catch (error) {
-              console.error(`Erreur lors de la mise en cache de l'icône pour ${shortcut.name}:`, error);
-              return shortcut;
-            }
-          }
-        }
-        return shortcut;
-      })
-    );
-
-    await saveShortcuts(updatedShortcuts);
-  } catch (error) {
-    console.error('Erreur lors de l\'initialisation des icônes:', error);
-  }
+  const updatedShortcuts = await Promise.all(
+    shortcuts.map(async (shortcut) => {
+      if (shortcut.isDefault && !shortcut.icon.startsWith('data:')) {
+        if (cache[shortcut.icon]) return { ...shortcut, icon: cache[shortcut.icon] };
+        try {
+          const base64 = await downloadAndCacheIcon(shortcut.icon);
+          return { ...shortcut, icon: base64 };
+        } catch { return shortcut; }
+      }
+      return shortcut;
+    })
+  );
+  await saveShortcuts(updatedShortcuts);
 };
 
-// Fonction pour télécharger et mettre en cache une image d'arrière-plan
+// ✅ BACKGROUNDS
 export const downloadAndCacheBackground = async (imageUrl: string): Promise<string> => {
-  try {
-    // Vérifier d'abord le cache
-    const result = await chrome.storage.local.get([BACKGROUND_CACHE_KEY]);
-    const cache = result[BACKGROUND_CACHE_KEY] || {};
-    
-    if (cache[imageUrl]) {
-      return cache[imageUrl];
-    }
+  const result = await chrome.storage.local.get([BACKGROUND_CACHE_KEY]);
+  const cache: BackgroundCache = result[BACKGROUND_CACHE_KEY] || {};
+  if (cache[imageUrl]) return cache[imageUrl];
 
-    // Télécharger l'image
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 secondes pour les images plus grandes
-    
-    const response = await fetch(imageUrl, { signal: controller.signal });
-    clearTimeout(timeoutId);
-    
-    if (!response.ok) throw new Error('Failed to fetch background image');
-    
-    const blob = await response.blob();
-    
-    // Vérifier la taille (max 2MB pour les arrière-plans)
-    if (blob.size > 2 * 1024 * 1024) {
-      throw new Error('Background image too large (max 2MB)');
-    }
-    
-    // Convertir en base64
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const base64 = reader.result as string;
-        
-        // Sauvegarder dans le cache
-        cache[imageUrl] = base64;
-        await chrome.storage.local.set({ [BACKGROUND_CACHE_KEY]: cache });
-        resolve(base64);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-  } catch (error) {
-    console.error('Erreur lors du téléchargement de l\'arrière-plan:', error);
-    throw error;
-  }
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
+  const response = await fetch(imageUrl, { signal: controller.signal });
+  clearTimeout(timeoutId);
+  if (!response.ok) throw new Error('Failed to fetch background');
+
+  const blob = await response.blob();
+  if (blob.size > 2 * 1024 * 1024) throw new Error('Background too large');
+
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = reader.result as string;
+      cache[imageUrl] = base64;
+      await chrome.storage.local.set({ [BACKGROUND_CACHE_KEY]: cache });
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 };
 
-// Fonction pour télécharger et mettre en cache une image d'arrière-plan
-export const downloadAndCacheBackground = async (imageUrl: string): Promise<string> => {
-  try {
-    // Vérifier d'abord le cache
-    const result = await chrome.storage.local.get([BACKGROUND_CACHE_KEY]);
-    const cache = result[BACKGROUND_CACHE_KEY] || {};
-    
-    if (cache[imageUrl]) {
-      return cache[imageUrl];
-    }
-
-    // Télécharger l'image
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 secondes pour les images plus grandes
-    
-    const response = await fetch(imageUrl, { signal: controller.signal });
-    clearTimeout(timeoutId);
-    
-    if (!response.ok) throw new Error('Failed to fetch background image');
-    
-    const blob = await response.blob();
-    
-    // Vérifier la taille (max 2MB pour les arrière-plans)
-    if (blob.size > 2 * 1024 * 1024) {
-      throw new Error('Background image too large (max 2MB)');
-    }
-    
-    // Convertir en base64
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const base64 = reader.result as string;
-        
-        // Sauvegarder dans le cache
-        cache[imageUrl] = base64;
-        await chrome.storage.local.set({ [BACKGROUND_CACHE_KEY]: cache });
-        resolve(base64);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-  } catch (error) {
-    console.error('Erreur lors du téléchargement de l\'arrière-plan:', error);
-    throw error;
-  }
-};
-
+// ✅ SHORTCUTS
 export const getShortcuts = async (): Promise<Shortcut[]> => {
-  try {
-    const result = await chrome.storage.sync.get([SHORTCUTS_KEY]);
-    return result[SHORTCUTS_KEY] || defaultShortcuts;
-  } catch (error) {
-    console.error('Erreur lors de la récupération des raccourcis:', error);
-    return defaultShortcuts;
-  }
+  const result = await chrome.storage.sync.get([SHORTCUTS_KEY]);
+  return result[SHORTCUTS_KEY] || defaultShortcuts;
 };
 
 export const saveShortcuts = async (shortcuts: Shortcut[]): Promise<void> => {
-  try {
-    await chrome.storage.sync.set({ [SHORTCUTS_KEY]: shortcuts });
-  } catch (error) {
-    console.error('Erreur lors de la sauvegarde des raccourcis:', error);
-  }
+  await chrome.storage.sync.set({ [SHORTCUTS_KEY]: shortcuts });
 };
 
 export const addShortcut = async (shortcut: Shortcut): Promise<void> => {
@@ -351,8 +229,7 @@ export const addShortcut = async (shortcut: Shortcut): Promise<void> => {
 
 export const removeShortcut = async (id: string): Promise<void> => {
   const shortcuts = await getShortcuts();
-  const filteredShortcuts = shortcuts.filter(s => s.id !== id);
-  await saveShortcuts(filteredShortcuts);
+  await saveShortcuts(shortcuts.filter(s => s.id !== id));
 };
 
 export const reorderShortcuts = async (startIndex: number, endIndex: number): Promise<void> => {
@@ -362,20 +239,12 @@ export const reorderShortcuts = async (startIndex: number, endIndex: number): Pr
   await saveShortcuts(shortcuts);
 };
 
+// ✅ SETTINGS
 export const getSettings = async (): Promise<AppSettings> => {
-  try {
-    const result = await chrome.storage.sync.get([SETTINGS_KEY]);
-    return { ...defaultSettings, ...result[SETTINGS_KEY] };
-  } catch (error) {
-    console.error('Erreur lors de la récupération des paramètres:', error);
-    return defaultSettings;
-  }
+  const result = await chrome.storage.sync.get([SETTINGS_KEY]);
+  return { ...defaultSettings, ...result[SETTINGS_KEY] };
 };
 
 export const saveSettings = async (settings: AppSettings): Promise<void> => {
-  try {
-    await chrome.storage.sync.set({ [SETTINGS_KEY]: settings });
-  } catch (error) {
-    console.error('Erreur lors de la sauvegarde des paramètres:', error);
-  }
+  await chrome.storage.sync.set({ [SETTINGS_KEY]: settings });
 };
