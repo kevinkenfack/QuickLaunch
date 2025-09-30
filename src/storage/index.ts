@@ -111,6 +111,26 @@ export const defaultBackgrounds = [
     name: 'Texture minimaliste',
     url: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=800&h=600&fit=crop',
     preview: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=200&h=150&fit=crop'
+  },
+  {
+    name: 'Arrière-plan 1',
+    url: 'https://images.unsplash.com/photo-1494783367193-149034c05e8f?w=800&h=600&fit=crop',
+    preview: 'https://images.unsplash.com/photo-1494783367193-149034c05e8f?w=800&h=600&fit=crop'
+  },
+  {
+    name: 'Arrière-plan 2',
+    url: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800&h=600&fit=crop',
+    preview: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800&h=600&fit=crop'
+  },
+  {
+    name: 'Arrière-plan 3',
+    url: 'https://images.unsplash.com/photo-1496483648148-47c686dc86a8?w=800&h=600&fit=crop',
+    preview: 'https://images.unsplash.com/photo-1496483648148-47c686dc86a8?w=800&h=600&fit=crop'
+  },
+  {
+    name: 'Arrière-plan 4',
+    url: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&h=600&fit=crop',
+    preview: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&h=600&fit=crop'
   }
 ];
 
