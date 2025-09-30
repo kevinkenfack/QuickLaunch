@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Save, RotateCcw, Palette, Github, Heart, Image } from 'lucide-react';
 import { AppSettings } from '../types';
-import { getSettings, saveSettings, defaultSettings, defaultBackgrounds, downloadAndCacheBackground } from '../storage';
+import { getSettings, saveSettings, defaultSettings, defaultBackgrounds, downloadAndCacheBackground, saveCustomBackgroundToCache } from '../storage';
 import { convertImageToBase64 } from '../utils';
 
 const Options: React.FC = () => {
@@ -70,8 +70,10 @@ const Options: React.FC = () => {
 
     setBackgroundLoading(true);
     try {
-      const cachedBackground = await downloadAndCacheBackground(backgroundUrl);
-      setSettings({ ...settings, backgroundImage: cachedBackground });
+      // On stocke seulement une référence (URL) dans les settings
+      // Le popup résoudra en base64 via resolveBackgroundImage
+      await downloadAndCacheBackground(backgroundUrl);
+      setSettings({ ...settings, backgroundImage: backgroundUrl });
     } catch (error) {
       console.error('Erreur lors du téléchargement de l\'arrière-plan:', error);
       setMessage('Erreur lors du téléchargement de l\'arrière-plan');
@@ -100,7 +102,9 @@ const Options: React.FC = () => {
     setBackgroundLoading(true);
     try {
       const base64 = await convertImageToBase64(file);
-      setSettings({ ...settings, backgroundImage: base64 });
+      // Stocker dans le cache local et ne garder qu'une clé courte dans les settings
+      const refKey = await saveCustomBackgroundToCache(base64);
+      setSettings({ ...settings, backgroundImage: refKey });
     } catch (error) {
       setMessage('Erreur lors du traitement de l\'image');
       setTimeout(() => setMessage(''), 3000);

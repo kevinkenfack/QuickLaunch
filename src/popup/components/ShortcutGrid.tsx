@@ -8,6 +8,7 @@ interface ShortcutGridProps {
   shortcuts: Shortcut[];
   gridColumns: number;
   isEditMode: boolean;
+  hasBackground?: boolean;
   onShortcutsChange: () => void;
 }
 
@@ -15,6 +16,7 @@ const ShortcutGrid: React.FC<ShortcutGridProps> = ({
   shortcuts,
   gridColumns,
   isEditMode,
+  hasBackground = false,
   onShortcutsChange
 }) => {
   const handleDragEnd = async (result: DropResult) => {
@@ -61,6 +63,7 @@ const ShortcutGrid: React.FC<ShortcutGridProps> = ({
                       <ShortcutItem
                         shortcut={shortcut}
                         isEditMode={isEditMode}
+                        hasBackground={hasBackground}
                         onDelete={onShortcutsChange}
                         isDragging={snapshot.isDragging}
                       />
@@ -83,6 +86,7 @@ const ShortcutGrid: React.FC<ShortcutGridProps> = ({
           key={shortcut.id}
           shortcut={shortcut}
           isEditMode={isEditMode}
+          hasBackground={hasBackground}
           onDelete={onShortcutsChange}
         />
       ))}

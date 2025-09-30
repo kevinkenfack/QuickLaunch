@@ -211,6 +211,42 @@ export const downloadAndCacheBackground = async (imageUrl: string): Promise<stri
   });
 };
 
+// Sauvegarder un arrière-plan personnalisé (base64) dans le cache local et retourner une clé de référence
+export const saveCustomBackgroundToCache = async (base64: string): Promise<string> => {
+  const result = await chrome.storage.local.get([BACKGROUND_CACHE_KEY]);
+  const cache: BackgroundCache = result[BACKGROUND_CACHE_KEY] || {};
+  // Générer une clé stable à partir d'un hash simple
+  const keySource = base64.slice(0, 128) + base64.length.toString();
+  const key = 'custom_' + btoa(unescape(encodeURIComponent(keySource))).replace(/[^a-zA-Z0-9_]/g, '').slice(0, 32);
+  cache[key] = base64;
+  await chrome.storage.local.set({ [BACKGROUND_CACHE_KEY]: cache });
+  return `cached:${key}`;
+};
+
+// Résoudre une valeur d'arrière-plan en data URL exploitable par le style
+export const resolveBackground = async (value: string): Promise<string> => {
+  if (!value) return '';
+  if (value.startsWith('data:')) return value;
+  if (value.startsWith('http://') || value.startsWith('https://')) {
+    try {
+      return await downloadAndCacheBackground(value);
+    } catch {
+      return '';
+    }
+  }
+  if (value.startsWith('cached:')) {
+    const key = value.slice('cached:'.length);
+    const result = await chrome.storage.local.get([BACKGROUND_CACHE_KEY]);
+    const cache: BackgroundCache = result[BACKGROUND_CACHE_KEY] || {};
+    return cache[key] || '';
+  }
+  // Valeur inconnue: retourner vide pour éviter erreurs
+  return '';
+};
+
+// Sauvegarder un arrière-plan personnalisé (base64) dans le cache local et retourner une clé de référence
+// (Anciennes fonctions remplacées par saveCustomBackgroundToCache et resolveBackground)
+
 // ✅ SHORTCUTS
 export const getShortcuts = async (): Promise<Shortcut[]> => {
   const result = await chrome.storage.sync.get([SHORTCUTS_KEY]);
@@ -246,5 +282,15 @@ export const getSettings = async (): Promise<AppSettings> => {
 };
 
 export const saveSettings = async (settings: AppSettings): Promise<void> => {
-  await chrome.storage.sync.set({ [SETTINGS_KEY]: settings });
+  let settingsToSave = { ...settings };
+  // Déplacer les gros base64 vers le cache local pour respecter la quota de chrome.storage.sync
+  if (settingsToSave.backgroundImage && settingsToSave.backgroundImage.startsWith('data:')) {
+    try {
+      const ref = await saveCustomBackgroundToCache(settingsToSave.backgroundImage);
+      settingsToSave.backgroundImage = ref;
+    } catch (e) {
+      // En cas d'échec, laisser tel quel (le save peut échouer si trop grand)
+    }
+  }
+  await chrome.storage.sync.set({ [SETTINGS_KEY]: settingsToSave });
 };

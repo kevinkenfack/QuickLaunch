@@ -3,7 +3,7 @@ import { Settings, Plus, Edit3, Github } from 'lucide-react';
 import ShortcutGrid from './components/ShortcutGrid';
 import AddShortcutModal from './components/AddShortcutModal';
 import { Shortcut, AppSettings } from '../types';
-import { getShortcuts, getSettings, saveSettings, initializeDefaultIcons } from '../storage';
+import { getShortcuts, getSettings, saveSettings, initializeDefaultIcons, resolveBackground } from '../storage';
 
 const Popup: React.FC = () => {
   const [shortcuts, setShortcuts] = useState<Shortcut[]>([]);
@@ -17,6 +17,7 @@ const Popup: React.FC = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [resolvedBackground, setResolvedBackground] = useState<string>('');
 
   useEffect(() => {
     loadData();
@@ -25,6 +26,27 @@ const Popup: React.FC = () => {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', settings.theme);
   }, [settings.theme]);
+
+  // Résoudre l'arrière-plan à chaque changement de référence
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const bg = await resolveBackground(settings.backgroundImage);
+      if (!cancelled) setResolvedBackground(bg);
+    })();
+    return () => { cancelled = true; };
+  }, [settings.backgroundImage]);
+
+  // Écouter les changements de paramètres sauvegardés depuis la page Options
+  useEffect(() => {
+    const listener = (changes: { [key: string]: chrome.storage.StorageChange }, area: string) => {
+      if (area === 'sync' && changes['quicklaunch_settings']) {
+        getSettings().then(setSettings).catch(() => {});
+      }
+    };
+    chrome.storage.onChanged.addListener(listener);
+    return () => chrome.storage.onChanged.removeListener(listener);
+  }, []);
 
   const loadData = async () => {
     try {
@@ -86,14 +108,14 @@ const Popup: React.FC = () => {
     <div 
       className="w-96 min-h-64 bg-base-100 relative"
       style={{
-        backgroundImage: settings.backgroundImage ? `url(${settings.backgroundImage})` : 'none',
+        backgroundImage: resolvedBackground ? `url(${resolvedBackground})` : 'none',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat'
       }}
     >
       {/* Overlay pour l'opacité */}
-      {settings.backgroundImage && (
+      {resolvedBackground && (
         <div 
           className="absolute inset-0 bg-base-100"
           style={{ opacity: 1 - settings.backgroundOpacity }}
@@ -145,6 +167,7 @@ const Popup: React.FC = () => {
           shortcuts={shortcuts}
           gridColumns={settings.gridColumns}
           isEditMode={isEditMode}
+          hasBackground={Boolean(resolvedBackground)}
           onShortcutsChange={handleShortcutsChange}
         />
 

@@ -8,13 +8,15 @@ interface ShortcutItemProps {
   isEditMode: boolean;
   onDelete: () => void;
   isDragging?: boolean;
+  hasBackground?: boolean;
 }
 
 const ShortcutItem: React.FC<ShortcutItemProps> = ({
   shortcut,
   isEditMode,
   onDelete,
-  isDragging = false
+  isDragging = false,
+  hasBackground = false
 }) => {
   const handleClick = () => {
     if (!isEditMode) {
@@ -34,7 +36,8 @@ const ShortcutItem: React.FC<ShortcutItemProps> = ({
     <div className="relative group">
       <div
         className={`
-          card bg-base-200 hover:bg-base-300 transition-all duration-200
+          card transition-all duration-200
+          ${hasBackground ? 'bg-white/30 hover:bg-white/30 text-white border border-white/20' : 'bg-base-200 hover:bg-base-300'}
           ${isEditMode ? 'cursor-grab active:cursor-grabbing hover:shadow-lg' : 'cursor-pointer hover:scale-105'}
           ${isDragging ? 'shadow-2xl bg-primary/10 border-2 border-primary' : ''}
         `}
@@ -43,7 +46,7 @@ const ShortcutItem: React.FC<ShortcutItemProps> = ({
       >
         <div className="card-body p-3 items-center text-center">
           <div className="avatar">
-            <div className="w-8 h-8 rounded">
+            <div className={`w-8 h-8 rounded ${hasBackground ? 'bg-transparent' : ''}`}>
               <img
                 src={shortcut.icon}
                 alt={shortcut.name}
@@ -55,14 +58,14 @@ const ShortcutItem: React.FC<ShortcutItemProps> = ({
               />
             </div>
           </div>
-          <h3 className="text-xs font-medium truncate w-full">{shortcut.name}</h3>
+          <h3 className={`text-xs font-medium truncate w-full ${hasBackground ? 'text-white' : ''}`}>{shortcut.name}</h3>
         </div>
       </div>
       
       {/* Indicateur de glissement en mode édition */}
       {isEditMode && !isDragging && (
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded-lg">
-          <div className="text-xs text-base-content/70 font-medium">
+        <div className={`absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ${hasBackground ? 'bg-black/20' : 'bg-black/10'} rounded-lg`}>
+          <div className={`text-xs ${hasBackground ? 'text-white/80' : 'text-base-content/70'} font-medium`}>
             ⋮⋮
           </div>
         </div>
