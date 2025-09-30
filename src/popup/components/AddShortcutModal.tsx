@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Upload } from 'lucide-react';
 import { addShortcut } from '../../storage';
 import { generateId, convertImageToBase64, isValidUrl, formatUrl } from '../../utils';
+import { downloadAndCacheIcon } from '../../storage';
 
 interface AddShortcutModalProps {
   isOpen: boolean;
@@ -82,7 +83,7 @@ const AddShortcutModal: React.FC<AddShortcutModalProps> = ({
         id: generateId(),
         name: name.trim(),
         url: formattedUrl,
-        icon: icon || `https://www.google.com/s2/favicons?domain=${new URL(formattedUrl).hostname}&sz=32`
+        icon: icon || await downloadAndCacheIcon(`https://www.google.com/s2/favicons?domain=${new URL(formattedUrl).hostname}&sz=32`)
       };
 
       await addShortcut(shortcut);

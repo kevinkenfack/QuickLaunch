@@ -3,14 +3,21 @@ import { Settings, Plus, Edit3, Github } from 'lucide-react';
 import ShortcutGrid from './components/ShortcutGrid';
 import AddShortcutModal from './components/AddShortcutModal';
 import { Shortcut, AppSettings } from '../types';
-import { getShortcuts, getSettings, saveSettings } from '../storage';
+import { getShortcuts, getSettings, saveSettings, initializeDefaultIcons, resolveBackground } from '../storage';
 
 const Popup: React.FC = () => {
   const [shortcuts, setShortcuts] = useState<Shortcut[]>([]);
-  const [settings, setSettings] = useState<AppSettings>({ theme: 'light', gridColumns: 3 });
+  const [settings, setSettings] = useState<AppSettings>({
+    theme: 'light',
+    gridColumns: 3,
+    backgroundImage: '',
+    backgroundOpacity: 0.1
+  });
+  
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [resolvedBackground, setResolvedBackground] = useState<string>('');
 
   useEffect(() => {
     loadData();
@@ -20,14 +27,49 @@ const Popup: React.FC = () => {
     document.documentElement.setAttribute('data-theme', settings.theme);
   }, [settings.theme]);
 
+  // Résoudre l'arrière-plan à chaque changement de référence
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const bg = await resolveBackground(settings.backgroundImage);
+      if (!cancelled) setResolvedBackground(bg);
+    })();
+    return () => { cancelled = true; };
+  }, [settings.backgroundImage]);
+
+  // Écouter les changements de paramètres sauvegardés depuis la page Options
+  useEffect(() => {
+    const listener = (changes: { [key: string]: chrome.storage.StorageChange }, area: string) => {
+      if (area === 'sync' && changes['quicklaunch_settings']) {
+        getSettings().then(setSettings).catch(() => {});
+      }
+    };
+    chrome.storage.onChanged.addListener(listener);
+    return () => chrome.storage.onChanged.removeListener(listener);
+  }, []);
+
   const loadData = async () => {
     try {
       const [loadedShortcuts, loadedSettings] = await Promise.all([
         getShortcuts(),
         getSettings()
       ]);
+      
       setShortcuts(loadedShortcuts);
       setSettings(loadedSettings);
+      
+      // Initialiser les icônes en arrière-plan seulement si nécessaire
+      const hasUncachedIcons = loadedShortcuts.some(s => 
+        s.isDefault && !s.icon.startsWith('data:')
+      );
+      
+      if (hasUncachedIcons) {
+        // Faire cela en arrière-plan sans bloquer l'UI
+        initializeDefaultIcons().then(() => {
+          // Recharger les raccourcis après la mise en cache
+          getShortcuts().then(setShortcuts);
+        });
+      }
     } catch (error) {
       console.error('Erreur lors du chargement des données:', error);
     } finally {
@@ -63,7 +105,25 @@ const Popup: React.FC = () => {
   }
 
   return (
-    <div className="w-96 min-h-64 bg-base-100">
+    <div 
+      className="w-96 min-h-64 bg-base-100 relative"
+      style={{
+        backgroundImage: resolvedBackground ? `url(${resolvedBackground})` : 'none',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      {/* Overlay pour l'opacité */}
+      {resolvedBackground && (
+        <div 
+          className="absolute inset-0 bg-base-100"
+          style={{ opacity: 1 - settings.backgroundOpacity }}
+        />
+      )}
+      
+      {/* Contenu principal */}
+      <div className="relative z-10">
       {/* Header */}
       <div className="navbar bg-base-200 px-4 py-2">
         <div className="flex-1">
@@ -107,6 +167,7 @@ const Popup: React.FC = () => {
           shortcuts={shortcuts}
           gridColumns={settings.gridColumns}
           isEditMode={isEditMode}
+          hasBackground={Boolean(resolvedBackground)}
           onShortcutsChange={handleShortcutsChange}
         />
 
@@ -133,6 +194,7 @@ const Popup: React.FC = () => {
             </button>
           </p>
         </div>
+      </div>
       </div>
 
       {/* Add Shortcut Modal */}

@@ -34,6 +34,18 @@ body {
   transition: all 0.2s ease-in-out;
 }
 
+/* Animations pour le drag and drop */
+.dragging {
+  transform: rotate(3deg) scale(1.05);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}
+
+.drag-over {
+  background-color: hsl(var(--b3));
+  border-radius: 0.5rem;
+}
+
 /* Fix pour les grilles dynamiques */
 .grid-cols-2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
