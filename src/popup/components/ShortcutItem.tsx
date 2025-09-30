@@ -7,12 +7,14 @@ interface ShortcutItemProps {
   shortcut: Shortcut;
   isEditMode: boolean;
   onDelete: () => void;
+  isDragging?: boolean;
 }
 
 const ShortcutItem: React.FC<ShortcutItemProps> = ({
   shortcut,
   isEditMode,
-  onDelete
+  onDelete,
+  isDragging = false
 }) => {
   const handleClick = () => {
     if (!isEditMode) {
@@ -32,10 +34,12 @@ const ShortcutItem: React.FC<ShortcutItemProps> = ({
     <div className="relative group">
       <div
         className={`
-          card bg-base-200 hover:bg-base-300 transition-all duration-200 cursor-pointer
-          ${isEditMode ? 'hover:shadow-lg' : 'hover:scale-105'}
+          card bg-base-200 hover:bg-base-300 transition-all duration-200
+          ${isEditMode ? 'cursor-grab active:cursor-grabbing hover:shadow-lg' : 'cursor-pointer hover:scale-105'}
+          ${isDragging ? 'shadow-2xl bg-primary/10 border-2 border-primary' : ''}
         `}
         onClick={handleClick}
+        title={isEditMode ? 'Glissez pour réorganiser' : `Ouvrir ${shortcut.name}`}
       >
         <div className="card-body p-3 items-center text-center">
           <div className="avatar">
@@ -43,6 +47,7 @@ const ShortcutItem: React.FC<ShortcutItemProps> = ({
               <img
                 src={shortcut.icon}
                 alt={shortcut.name}
+                loading="lazy"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iIzk0YTNiOCIvPgo8cGF0aCBkPSJNMTIgOGMtMi4yMSAwLTQgMS43OS00IDRzMS43OSA0IDQgNCA0LTEuNzkgNC00LTEuNzktNC00LTR6bTAgNmMtMS4xIDAtMi0uOS0yLTJzLjktMiAyLTIgMiAuOSAyIDItLjkgMi0yIDJ6IiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K';
@@ -53,6 +58,15 @@ const ShortcutItem: React.FC<ShortcutItemProps> = ({
           <h3 className="text-xs font-medium truncate w-full">{shortcut.name}</h3>
         </div>
       </div>
+      
+      {/* Indicateur de glissement en mode édition */}
+      {isEditMode && !isDragging && (
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded-lg">
+          <div className="text-xs text-base-content/70 font-medium">
+            ⋮⋮
+          </div>
+        </div>
+      )}
 
       {/* Delete button in edit mode */}
       {isEditMode && !shortcut.isDefault && (

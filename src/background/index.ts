@@ -1,9 +1,13 @@
 // Background script pour QuickLaunch
 // Gère les événements de l'extension en arrière-plan
+import { initializeDefaultIcons } from '../storage';
 
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === 'install') {
     console.log('QuickLaunch installé avec succès !');
+    
+    // Initialiser les icônes par défaut
+    initializeDefaultIcons().catch(console.error);
     
     // Optionnel : ouvrir la page d'options au premier lancement
     // chrome.tabs.create({ url: chrome.runtime.getURL('src/options/index.html') });

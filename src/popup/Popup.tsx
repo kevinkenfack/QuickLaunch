@@ -3,7 +3,7 @@ import { Settings, Plus, Edit3, Github } from 'lucide-react';
 import ShortcutGrid from './components/ShortcutGrid';
 import AddShortcutModal from './components/AddShortcutModal';
 import { Shortcut, AppSettings } from '../types';
-import { getShortcuts, getSettings, saveSettings } from '../storage';
+import { getShortcuts, getSettings, saveSettings, initializeDefaultIcons } from '../storage';
 
 const Popup: React.FC = () => {
   const [shortcuts, setShortcuts] = useState<Shortcut[]>([]);
@@ -22,6 +22,9 @@ const Popup: React.FC = () => {
 
   const loadData = async () => {
     try {
+      // Initialiser les icônes par défaut si nécessaire
+      await initializeDefaultIcons();
+      
       const [loadedShortcuts, loadedSettings] = await Promise.all([
         getShortcuts(),
         getSettings()

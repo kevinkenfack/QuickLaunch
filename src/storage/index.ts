@@ -2,6 +2,7 @@ import { Shortcut, AppSettings } from '../types';
 
 const SHORTCUTS_KEY = 'quicklaunch_shortcuts';
 const SETTINGS_KEY = 'quicklaunch_settings';
+const ICONS_CACHE_KEY = 'quicklaunch_icons_cache';
 
 // Raccourcis par défaut
 export const defaultShortcuts: Shortcut[] = [
@@ -75,6 +76,87 @@ export const defaultSettings: AppSettings = {
   gridColumns: 3
 };
 
+// Cache des icônes en base64
+interface IconCache {
+  [url: string]: string;
+}
+
+// Fonction pour télécharger et convertir une icône en base64
+export const downloadAndCacheIcon = async (iconUrl: string): Promise<string> => {
+  try {
+    // Vérifier d'abord le cache
+    const cache = await getIconCache();
+    if (cache[iconUrl]) {
+      return cache[iconUrl];
+    }
+
+    // Télécharger l'icône
+    const response = await fetch(iconUrl);
+    if (!response.ok) throw new Error('Failed to fetch icon');
+    
+    const blob = await response.blob();
+    
+    // Convertir en base64
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result as string;
+        
+        // Sauvegarder dans le cache
+        await saveIconToCache(iconUrl, base64);
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    console.error('Erreur lors du téléchargement de l\'icône:', error);
+    // Retourner une icône par défaut en cas d'erreur
+    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iIzk0YTNiOCIvPgo8cGF0aCBkPSJNMTIgOGMtMi4yMSAwLTQgMS43OS00IDRzMS43OSA0IDQgNCA0LTEuNzkgNC00LTEuNzktNC00LTR6bTAgNmMtMS4xIDAtMi0uOS0yLTJzLjktMiAyLTIgMiAuOSAyIDItLjkgMi0yIDJ6IiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K';
+  }
+};
+
+// Récupérer le cache des icônes
+const getIconCache = async (): Promise<IconCache> => {
+  try {
+    const result = await chrome.storage.local.get([ICONS_CACHE_KEY]);
+    return result[ICONS_CACHE_KEY] || {};
+  } catch (error) {
+    console.error('Erreur lors de la récupération du cache des icônes:', error);
+    return {};
+  }
+};
+
+// Sauvegarder une icône dans le cache
+const saveIconToCache = async (url: string, base64: string): Promise<void> => {
+  try {
+    const cache = await getIconCache();
+    cache[url] = base64;
+    await chrome.storage.local.set({ [ICONS_CACHE_KEY]: cache });
+  } catch (error) {
+    console.error('Erreur lors de la sauvegarde de l\'icône dans le cache:', error);
+  }
+};
+
+// Initialiser les icônes par défaut dans le cache
+export const initializeDefaultIcons = async (): Promise<void> => {
+  const shortcuts = await getShortcuts();
+  
+  for (const shortcut of shortcuts) {
+    if (shortcut.isDefault && !shortcut.icon.startsWith('data:')) {
+      try {
+        const cachedIcon = await downloadAndCacheIcon(shortcut.icon);
+        // Mettre à jour le raccourci avec l'icône en cache
+        shortcut.icon = cachedIcon;
+      } catch (error) {
+        console.error(`Erreur lors de la mise en cache de l'icône pour ${shortcut.name}:`, error);
+      }
+    }
+  }
+  
+  await saveShortcuts(shortcuts);
+};
+
 export const getShortcuts = async (): Promise<Shortcut[]> => {
   try {
     const result = await chrome.storage.sync.get([SHORTCUTS_KEY]);
@@ -103,6 +185,13 @@ export const removeShortcut = async (id: string): Promise<void> => {
   const shortcuts = await getShortcuts();
   const filteredShortcuts = shortcuts.filter(s => s.id !== id);
   await saveShortcuts(filteredShortcuts);
+};
+
+export const reorderShortcuts = async (startIndex: number, endIndex: number): Promise<void> => {
+  const shortcuts = await getShortcuts();
+  const [removed] = shortcuts.splice(startIndex, 1);
+  shortcuts.splice(endIndex, 0, removed);
+  await saveShortcuts(shortcuts);
 };
 
 export const getSettings = async (): Promise<AppSettings> => {
