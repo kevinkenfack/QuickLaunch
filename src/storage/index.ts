@@ -131,6 +131,16 @@ export const defaultBackgrounds = [
     name: 'Arrière-plan 4',
     url: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&h=600&fit=crop',
     preview: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&h=600&fit=crop'
+  },
+  {
+    name: 'Arrière-plan 5',
+    url: 'https://images.unsplash.com/photo-1754038373296-77dfb664da12?q=80&w=1075&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&h=600',
+    preview: 'https://images.unsplash.com/photo-1754038373296-77dfb664da12?q=80&w=1075&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+  },
+  {
+    name: 'Arrière-plan 6',
+    url: 'https://images.unsplash.com/photo-1751670346016-bda0dc756da9?q=80&w=1075&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&h=600',
+    preview: 'https://images.unsplash.com/photo-1751670346016-bda0dc756da9?q=80&w=1075&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
   }
 ];
 
